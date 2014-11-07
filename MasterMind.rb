@@ -29,17 +29,37 @@ class AiGuss
         ai_check
         @last_correct = 0
         @last_have = 0
+        @temp = ""
+        @temp_i = 0
+        @answer = Array.new(4)
     end
     
     def ai_check (correct = 0, have = 0)
         @correct = correct
         @have = have
-    
+        
+        if @correct == 4
+            return @answer
+        end
+        
         if (correct == 0 && have == 0)
             @ai_guss = new_guss
-        else if (@correct != 0)
-            
-            
+        else 
+            if @correct > @last_correct
+                if ( @correct >0 && @temp == "")
+                    @ai_guss[@temp_i] = "-"
+                    @temp = @ai_guss[@temp_i]
+                    @correct = @last_correct
+                elsif @correct == @last_correct
+                    @ai_guss[@temp_i] = @temp
+                    @temp_i += 1
+                    @ai_guss[@temp_i] = "-"
+                    @temp = @ai_guss[@temp_i]
+                    @correct = @last_correct
+                elsif @correct != @last_correct
+                    @answer = @ai_guss[@temp_i]  
+                end
+            end
         end
     end
     
@@ -68,20 +88,22 @@ class Game
         arr_guss = guss.split
         @correct = 0
         @have = 0
-        wrong_arr = @code
-        wrong_input = arr_guss   
+        wrong_arr = @code.dup
+        wrong_input = arr_guss.dup   
         @code.each_index do |i|
             if @code[i] == arr_guss[i]
                 @correct += 1
                 wrong_arr[i] = "-"
-            else
-                wrong_input[i] = "-"
+                wrong_input[i] = "+"
             end
         end
-        wrong_input.each do |y|
-        
-           if wrong_arr.include?(y)
-                @have += 1 
+        wrong_input.each do |y| 
+            wrong_arr.each_index do |x|
+                if wrong_arr[x] == y
+                    @have += 1 
+                    wrong_arr[x] = "-"
+                    break
+                end
             end
         end
     end
@@ -95,5 +117,11 @@ x = ScertArray.new
 p x.scert_code
 y = Game.new(x.scert_code)
 z = AiGuss.new
-y.check(z.get_guss)
-puts y.correct,y.have
+while true
+    p y.code
+    puts z.get_guss
+    y.check(z.get_guss)
+    puts y.correct,y.have
+    z.ai_check
+    break if gets.chomp=="q"
+end
